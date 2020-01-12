@@ -1,0 +1,5 @@
+== Опыты с Spring OAuth2 сервером
+
+https://docs.spring.io/spring-security-oauth2-boot/docs/current/reference/html/boot-features-security-oauth2-authorization-server.html[Источник]
+
+
