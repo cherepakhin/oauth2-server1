@@ -42,9 +42,10 @@ curl vasiid:vasisecret@localhost:8080/oauth/token -dgrant_type=client_credential
 }
 ----
 
-=== 2.Добавлены конечные пользователи
+=== 2. https://github.com/cherepakhin/oauth2-server1/tree/84f0d1305dd70659c59cb77e3737bb16ddaf7117[Добавлены конечные пользователи]
 
 После добавления
+
 .WebSecurityConfig.java
 [source,java]
 ----
@@ -76,19 +77,22 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
 
     protected void configure(ClientDetailsServiceConfigurer clients) {
         clients
-            .inMemory()
-                .withClient("first-client")
-                .secret(passwordEncoder().encode("noonewilleverguess"))
-                .scopes("resource:read")
-                .authorizedGrantTypes("authorization_code")
-                .redirectUris("http://localhost:8081/oauth/login/client-app");
+				.inMemory()
+				.withClient("vasiid")
+				.secret(passwordEncoder().encode("vasisecret"))
+				.scopes("resource:read")
+				.authorizedGrantTypes("authorization_code")
+				.redirectUris("http://localhost:8081/oauth/login/client-app");
     }
 }
 ----
 
-При переходе по адресу http://localhost:8080/oauth/authorize?grant_type=authorization_code&response_type=code&client_id=vasiid&state=1234
-браузер покажет страницу http://localhost:8080/login для ввода имени конечного
+При переходе по адресу
+http://localhost:8080/oauth/authorize?grant_type=authorization_code&response_type=code&client_id=vasiid&state=1234
+браузер покажет страницу
+http://localhost:8080/login
+для ввода имени конечного
 пользователя и пароля (enduser/password). Потом будет выдан запрос с разрешением доступа к ресурсу.
-При разрешении буде сделан переход на http://localhost:8081/oauth/login/client-app
-
+При разрешении будет сделан переход на
+http://localhost:8081/oauth/login/client-app
 
