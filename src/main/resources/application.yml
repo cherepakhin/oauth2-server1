@@ -1,6 +1,1 @@
-security:
-  oauth2:
-    client:
-      client-id: vasiid
-      client-secret: vasisecret
 

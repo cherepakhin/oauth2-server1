@@ -1,5 +1,94 @@
-== Опыты с Spring OAuth2 сервером
+== Конспект с Spring OAuth2 сервером
 
 https://docs.spring.io/spring-security-oauth2-boot/docs/current/reference/html/boot-features-security-oauth2-authorization-server.html[Источник]
+
+=== 1. https://github.com/cherepakhin/oauth2-server1/tree/cb6f645ba13ffb056812714ce5020e22eff74196[Простейшая реализация]
+
+.AuthServer1Application.java
+[source,java]
+----
+@EnableAuthorizationServer
+@SpringBootApplication
+public class AuthServer1Application {
+	public static void main(String[] args) {
+		SpringApplication.run(AuthServer1Application.class, args);
+	}
+}
+----
+.application.yml
+[source,yaml]
+----
+security:
+  oauth2:
+    client:
+      client-id: vasiid
+      client-secret: vasisecret
+----
+
+.Проверка
+[source,shell script]
+----
+curl vasiid:vasisecret@localhost:8080/oauth/token -dgrant_type=client_credentials -dscope=any
+----
+
+Должно выдать что-то типа такого
+[source,json]
+----
+{
+  "access_token":"fba542c7-e083-43f3-b71a-7e5706463398",
+  "token_type":"bearer",
+  "expires_in":43199,
+  "scope":"any"
+}
+----
+
+=== 2.Добавлены конечные пользователи
+
+После добавления
+.WebSecurityConfig.java
+[source,java]
+----
+@EnableWebSecurity
+public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
+    @Bean
+    @Override
+    public UserDetailsService userDetailsService() {
+        return new InMemoryUserDetailsManager(
+            User.withDefaultPasswordEncoder()
+                .username("enduser")
+                .password("password")
+                .roles("USER")
+                .build());
+    }
+}
+----
+
+.AuthorizationServerConfig.java
+[source,java]
+----
+@Configuration
+public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdapter {
+
+    @Bean
+    PasswordEncoder passwordEncoder() {
+        return PasswordEncoderFactories.createDelegatingPasswordEncoder();
+    }
+
+    protected void configure(ClientDetailsServiceConfigurer clients) {
+        clients
+            .inMemory()
+                .withClient("first-client")
+                .secret(passwordEncoder().encode("noonewilleverguess"))
+                .scopes("resource:read")
+                .authorizedGrantTypes("authorization_code")
+                .redirectUris("http://localhost:8081/oauth/login/client-app");
+    }
+}
+----
+
+При переходе по адресу http://localhost:8080/oauth/authorize?grant_type=authorization_code&response_type=code&client_id=vasiid&state=1234
+браузер покажет страницу http://localhost:8080/login для ввода имени конечного
+пользователя и пароля (enduser/password). Потом будет выдан запрос с разрешением доступа к ресурсу.
+При разрешении буде сделан переход на http://localhost:8081/oauth/login/client-app
 
 
